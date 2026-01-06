@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>一橋大学 前期日程　配点シミュレーター</title>
+<style>
+    /* 全体のレイアウト */
+    body { font-family: "Helvetica Neue", Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 10px; background-color: #f4f6f9; color: #333; }
+    h1 { color: #8e1728; text-align: center; font-size: 1.4em; margin-bottom: 10px; }
+    .container { background: white; padding: 12px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    
+    /* 入力セクション */
+    .input-section { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; }
+    .input-group { flex: 1; min-width: 280px; border: 1px solid #ddd; padding: 12px; border-radius: 5px; background: #fff; }
+    .input-group h3 { margin-top: 0; border-bottom: 2px solid #8e1728; padding-bottom: 5px; font-size: 1.05em; color: #8e1728; }
+    
+    label { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85em; align-items: center; }
+    input[type="number"] { width: 50px; padding: 6px 4px; border: 1px solid #ccc; border-radius: 4px; text-align: right; font-size: 0.95em; }
+    
+    button { width: 100%; padding: 14px; background-color: #8e1728; color: white; border: none; border-radius: 5px; font-size: 1.1em; font-weight: bold; cursor: pointer; margin: 10px 0; }
+
+    /* 表のレスポンシブ対応 */
+    .table-container { width: 100%; overflow-x: auto; margin-top: 15px; -webkit-overflow-scrolling: touch; }
+    table { width: 100%; border-collapse: collapse; min-width: 480px; font-size: 0.8em; }
+    th, td { border: 1px solid #ddd; padding: 6px 2px; text-align: center; line-height: 1.2; }
+    th { background-color: #f8f9fa; font-weight: bold; }
+    .faculty-name { font-weight: bold; color: #333; min-width: 45px; }
+    .score-plus { color: blue; font-weight: bold; }
+    .score-minus { color: red; font-weight: bold; }
+    .highlight { background-color: #fff9db; }
+    
+    .percentage { font-size: 0.85em; color: #444; display: block; }
+    .max-score { font-size: 0.8em; color: #888; display: block; margin-top: 2px; border-top: 1px dotted #ccc; }
+    
+    .note { font-size: 0.75em; color: #666; margin-top: 10px; line-height: 1.3; }
+    .site-link { text-align: center; margin: 12px 0; font-size: 0.8em; color: #555; word-break: break-all; padding: 0 10px; }
+    .footer { text-align: center; margin-top: 30px; padding-top: 15px; border-top: 1px solid #eee; font-size: 0.85em; }
+    .footer a { color: #1DA1F2; text-decoration: none; font-weight: bold; }
+
+    /* スマホ（画面幅が狭い時）の調整 */
+    @media (max-width: 600px) {
+        table { min-width: 100%; font-size: 0.72em; }
+        th, td { padding: 4px 1px; }
+        .max-score { font-size: 0.85em; }
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>一橋大学 前期日程　配点シミュレーター</h1>
+    <p style="text-align: center; font-size: 0.85em;"> 各学部の換算得点と得点率(%)が分かります。共通テストは素点を、二次試験は予想得点率(%)を入力してください。</p>
+
+    <div class="input-section">
+        <div class="input-group">
+            <h3>① 共通テスト 素点入力</h3>
+            <label>英語リーディング (100) <input type="number" id="k_eng_r" value="80" max="100"></label>
+            <label>英語リスニング (100) <input type="number" id="k_eng_l" value="80" max="100"></label>
+            <label>数学IA (100) <input type="number" id="k_math_1a" value="80" max="100"></label>
+            <label>数学IIBC (100) <input type="number" id="k_math_2bc" value="80" max="100"></label>
+            <label>国語 (200) <input type="number" id="k_jpn" value="160" max="200"></label>
+            <label>理科① (100) <input type="number" id="k_sci" value="80" max="100"></label>
+            <label>社会① (100) <input type="number" id="k_soc_1" value="80" max="100"></label>
+            <label>社会② (100) ※SDS理系は理科②の点を入力<input type="number" id="k_soc_2" value="80" max="100"></label>
+            <label>情報I (100) <input type="number" id="k_info" value="80" max="100"></label>
+        </div>
+
+        <div class="input-group">
+            <h3>② 二次試験 得点率 (%)</h3>
+            <label>英語 <input type="number" id="n_eng" value="60" max="100"></label>
+            <label>数学 <input type="number" id="n_math" value="60" max="100"></label>
+            <label>国語 <input type="number" id="n_jpn" value="60" max="100"></label>
+            <label>社会 (地歴) <input type="number" id="n_soc" value="60" max="100"></label>
+            <label>総合問題 (SDSのみ) <input type="number" id="n_sds_gen" value="60" max="100"></label>
+        </div>
+    </div>
+
+    <button onclick="calculateScore()">計算実行</button>
+    
+    <p class="site-link">このサイトのリンクは <a href="https://sites.google.com/view/hitsimulating">https://sites.google.com/view/hitsimulating</a></p>
+
+    <div id="result-area" class="table-container">
+        <table id="resultTable">
+            <thead>
+                <tr>
+                    <th>学部</th>
+                    <th>共テ換算<br>得点(率)</th>
+                    <th>二次換算<br>得点(率)</th>
+                    <th>合計得点<br>(1000)</th>
+                    <th>2025最低<br>(参考)</th>
+                    <th>2025差分<br>(参考)</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </div>
+    <p class="note">※最低点については2025年の最低点を元に計算した値となります。あくまで参考程度に。<br></p>
+
+    <div class="footer">
+        作成:ゆどーふ(X:<a href="https://x.com/yudofuhit" target="_blank">@yudofuhit</a>)
+    </div>
+</div>
+
+<script>
+    const kyotsuWeights = {
+        "商":   [25, 25, 25, 25, 50, 50, 25, 25, 50],
+        "経済": [17.5, 17.5, 17.5, 17.5, 35, 35, 17.5, 17.5, 35],
+        "法":   [20, 20, 25, 25, 40, 40, 25, 25, 30],
+        "社会": [10, 10, 10, 10, 20, 90, 10, 10, 10], 
+        "SDS":  [20, 20, 20, 20, 40, 30, 30, 30, 40]
+    };
+
+    const nijiWeights = {
+        "商":   [235, 230, 110, 125, 0],
+        "経済": [260, 260, 110, 160, 0],
+        "法":   [280, 180, 120, 170, 0],
+        "社会": [280, 130, 180, 230, 0],
+        "SDS":  [230, 330, 100, 0, 90] 
+    };
+
+    const passingScores = {
+        "商": 554,
+        "経済": 529,
+        "法": 567,
+        "社会": 563,
+        "SDS": 603
+    };
+
+    function calculateScore() {
+        const k_rates = [
+            Number(document.getElementById('k_eng_r').value) / 100,
+            Number(document.getElementById('k_eng_l').value) / 100,
+            Number(document.getElementById('k_math_1a').value) / 100,
+            Number(document.getElementById('k_math_2bc').value) / 100,
+            Number(document.getElementById('k_jpn').value) / 200,
+            Number(document.getElementById('k_sci').value) / 100,
+            Number(document.getElementById('k_soc_1').value) / 100,
+            Number(document.getElementById('k_soc_2').value) / 100,
+            Number(document.getElementById('k_info').value) / 100
+        ];
+
+        const n_rates = [
+            Number(document.getElementById('n_eng').value) / 100,
+            Number(document.getElementById('n_math').value) / 100,
+            Number(document.getElementById('n_jpn').value) / 100,
+            Number(document.getElementById('n_soc').value) / 100,
+            Number(document.getElementById('n_sds_gen').value) / 100
+        ];
+
+        const tbody = document.querySelector("#resultTable tbody");
+        tbody.innerHTML = "";
+
+        const faculties = ["商", "経済", "法", "社会", "SDS"];
+
+        faculties.forEach(faculty => {
+            let k_total = 0;
+            let k_max = 0;
+            kyotsuWeights[faculty].forEach((weight, index) => {
+                k_total += weight * k_rates[index];
+                k_max += weight;
+            });
+
+            let n_total = 0;
+            let n_max = 0;
+            nijiWeights[faculty].forEach((weight, index) => {
+                n_total += weight * n_rates[index];
+                n_max += weight;
+            });
+
+            const totalScore = k_total + n_total;
+            const diff = totalScore - passingScores[faculty];
+            const k_percent = (k_total / k_max) * 100;
+            const n_percent = (n_total / n_max) * 100;
+            
+            let diffDisplay = diff > 0 ? `+${diff.toFixed(1)}` : diff.toFixed(1);
+            let diffClass = diff > 0 ? "score-plus" : "score-minus";
+            let diffText = diff > 0 ? "合格" : "不足";
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td class="faculty-name">${faculty}</td>
+                <td>
+                    ${k_total.toFixed(1)}<br><span class="percentage">(${k_percent.toFixed(1)}%)</span>
+                    <span class="max-score">/${k_max}</span>
+                </td>
+                <td>
+                    ${n_total.toFixed(1)}<br><span class="percentage">(${n_percent.toFixed(1)}%)</span>
+                    <span class="max-score">/${n_max}</span>
+                </td>
+                <td class="highlight"><strong>${totalScore.toFixed(1)}</strong></td>
+                <td>${passingScores[faculty]}</td>
+                <td class="${diffClass}">${diffDisplay}<br>(${diffText})</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+</script>
+
+</body>
+</html>
